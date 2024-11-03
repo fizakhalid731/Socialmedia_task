@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <link rel="stylesheet" href="/signup_style.css" />
+    <script
+      src="https://kit.fontawesome.com/a57563e1c2.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div class="form-container">
+      <div class="logo">
+        <img src="logo1.png" alt="logo" />
+      </div>
+      <h2>SignUp Page</h2>
+      <div class="from_main_div">
+        <form class="form" id="signupForm">
+          <label for="Name">Name</label>
+          <br />
+          <input
+            type="text"
+            name="name"
+            id="name"
+            placeholder="Enter your name"
+            required
+          />
+          <br />
+
+          <label for="username">UserName</label>
+          <br />
+          <input
+            type="text"
+            name="username"
+            id="username"
+            placeholder="Enter Username"
+            required
+          />
+          <br />
+
+          <label for="email">Email</label>
+          <br />
+          <input
+            type="email"
+            name="email"
+            id="email"
+            placeholder="Enter your email"
+            required
+          />
+          <br />
+          <label for="password">Password</label>
+          <br />
+          <input
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Enter your password"
+            required
+          />
+          <div id="message" style="color: rgb(63, 61, 61)"></div>
+          <button type="submit">SignUp</button>
+        </form>
+      </div>
+    </div>
+    <div class="otpform" style="display: none">
+      <form id="otpForm">
+        <label for="otp" class="otp_label">Enter OTP:</label>
+        <br />
+        <input type="text" id="otp" name="otp" class="otp_input" required />
+        <br />
+        <button type="submit" class="otp_button">Verify OTP</button>
+        <div id="message" style="color: rgb(63, 61, 61)"></div>
+      </form>
+    </div>
+
+    <script>
+      const formcontainer = document.querySelector(".form-container");
+      const signupform = document.getElementById("signupForm");
+      const message = document.getElementById("message");
+      const otpForm = document.getElementById("otpForm");
+      const otpform = document.querySelector(".otpform");
+
+      signupform.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const formdata = {
+          name: document.getElementById("name").value,
+          username: document.getElementById("username").value,
+          email: document.getElementById("email").value,
+          password: document.getElementById("password").value,
+        };
+
+        {
+          const res = await fetch("/sign_up", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formdata),
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            formcontainer.style.display = "none";
+            otpform.style.display = "block";
+
+            message.innerHTML = "Enter the OTP sent to your email.";
+            // window.location.href = "/login.html";
+          } else {
+            document.getElementById("message").innerHTML =
+              result.message || "An error occured";
+          }
+        }
+      });
+
+      otpForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const formdata = {
+          name: document.getElementById("name").value,
+          username: document.getElementById("username").value,
+          email: document.getElementById("email").value,
+          password: document.getElementById("password").value,
+        };
+
+        const otp = document.getElementById("otp").value;
+        const email = formdata.email;
+        const res = await fetch("/verify-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, otp }),
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          message.innerHTML = "OTP verified! Redirecting to login page...";
+          window.location.href = "/login.html";
+        } else {
+          messageDiv.innerHTML =
+            result.error || "Invalid OTP, please try again.";
+        }
+      });
+    </script>
+  </body>
+</html>
