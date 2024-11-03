@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <link rel="stylesheet" href="/forgetpass.css" />
+    <script
+      src="https://kit.fontawesome.com/a57563e1c2.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div class="form-container">
+      <div class="logo">
+        <img src="logo1.png" alt="logo" />
+      </div>
+      <h2>Forget Password</h2>
+      <div class="from_main_div">
+        <form class="form" id="emailForm">
+          <label for="email">Email:</label>
+          <br />
+          <input
+            type="email"
+            name="email"
+            id="email"
+            placeholder="Enter your email"
+            required
+          />
+          <button type="submit">Submit</button>
+          <div id="message" style="color: rgb(63, 61, 61)"></div>
+        </form>
+      </div>
+    </div>
+    <!-- OTP -->
+
+    <div class="otpform" style="display: none">
+      <form id="otpForm">
+        <label for="otp" class="otp_label">Enter OTP:</label>
+        <br />
+        <input type="text" id="otp" name="otp" class="otp_input" required />
+        <br />
+        <button type="submit" class="otp_button">Verify OTP</button>
+        <div id="message" style="color: rgb(63, 61, 61)"></div>
+      </form>
+    </div>
+    <!-- Change Password -->
+    <div class="resetpaswordform" style="display: none">
+      <form id="passwordForm">
+        <label for="newPassword" class="resetformlabel">New Password:</label>
+        <br />
+        <input
+          type="password"
+          name="newPassword"
+          id="newPassword"
+          placeholder="Enter your password"
+          class="resetforminput"
+          required
+        />
+        <br />
+        <button type="submit" class="resetbutton">Reset Password</button>
+        <div id="message" style="color: rgb(63, 61, 61)"></div>
+      </form>
+    </div>
+    <script>
+      const formcontainer = document.querySelector(".form-container");
+      const otpform = document.querySelector(".otpform");
+      const resetpaswordform = document.querySelector(".resetpaswordform");
+
+      const emailForm = document.getElementById("emailForm");
+      const message = document.getElementById("message");
+      const otpForm = document.getElementById("otpForm");
+      const passwordForm = document.getElementById("passwordForm");
+
+      emailForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const formdata = {
+          email: document.getElementById("email").value,
+        };
+
+        {
+          const res = await fetch("/reset-password-req", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formdata),
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            formcontainer.style.display = "none";
+            otpform.style.display = "block";
+            message.innerHTML =
+              "Signup successful! Enter the OTP sent to your email.";
+          } else {
+            document.getElementById("message").innerHTML =
+              result.message || "An error occured";
+          }
+        }
+      });
+
+      otpForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const email = document.getElementById("email").value;
+
+        const forget_otp = document.getElementById("otp").value;
+        try {
+          const res = await fetch("/verify-forget-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, forget_otp }),
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            otpform.style.display = "none";
+            resetpaswordform.style.display = "block";
+            message.innerHTML = "OTP verified! Enter Your new password";
+          } else {
+            message.innerHTML =
+              result.error || "Invalid OTP, please try again.";
+          }
+        } catch (error) {
+          console.error("Network or server error:", error);
+          message.innerHTML =
+            "There was a network or server error. Please try again.";
+        }
+      });
+
+      passwordForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formdata = {
+          email: document.getElementById("email").value,
+          newPassword: document.getElementById("newPassword").value,
+        };
+        const res = await fetch("/reset-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formdata),
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          message.innerHTML = "Password reset Succesful!";
+          setTimeout(() => {
+            window.location.href = "/login.html";
+          }, 1000);
+        } else {
+          message.innerHTML = result.error || "Error Resettind password.";
+        }
+      });
+    </script>
+  </body>
+</html>
