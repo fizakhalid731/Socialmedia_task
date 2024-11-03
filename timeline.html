@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="timeline.css" />
+    <script
+      src="https://kit.fontawesome.com/a57563e1c2.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <header class="header">
+      <div class="logo">
+        <a href="/">
+          <img src="logo1.png" alt="logo" class="logo" />
+        </a>
+      </div>
+      <nav class="nav-links">
+        <a href="/timeline.html">TimeLine</a>
+        <a href="/profile.html">My Profile</a>
+      </nav>
+    </header>
+    <div id="timeline"></div>
+    <div id="posts"></div>
+
+    <script>
+      function timeAgo(date) {
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+
+        let interval = Math.floor(seconds / 31536000);
+        if (interval >= 1) return `${interval}y`; // years abbreviation
+
+        interval = Math.floor(seconds / 2592000);
+        if (interval >= 1) return `${interval}mo`; // months abbreviation
+
+        interval = Math.floor(seconds / 86400);
+        if (interval >= 1) return `${interval}d`; // days abbreviation
+
+        interval = Math.floor(seconds / 3600);
+        if (interval >= 1) return `${interval}h`; // hours abbreviation
+
+        interval = Math.floor(seconds / 60);
+        if (interval >= 1) return `${interval}m`; // minutes abbreviation
+
+        return "just now"; // for very recent posts
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch("/other-user-posts", {
+          method: "GET",
+          headers: {
+            // "Content-Type": "application/json",
+            token: token,
+          },
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById("timeline").innerHTML = data.posts
+            .map(
+              (userpost) =>
+                `
+                 <div class="maincontainer">
+                    <div class="maindiv">
+                    <div class="post">
+                        <div class = "namediv">
+                        <h3> <i class="fa-solid fa-circle-user"></i> ${
+                          userpost.username
+                        }</h3>
+                        <span class = "righticon"><i class="fa-solid fa-ellipsis"></i><span>
+                        </div>
+                        <div class="post-time"> <span>${timeAgo(
+                          new Date(userpost.createdAt)
+                        )}</span> <i class="fa-solid fa-earth-americas"></i></div>
+                        <div class = "postdiv">
+                        <div class = "title">
+                        <h3>${userpost.title}</h3>
+                        </div>
+                        <div class = "descript">
+                        <p>${userpost.description}</p>
+                         ${
+                           userpost.image
+                             ? `<img src="${userpost.image}" alt="Post Image" class="post-image" />`
+                             : ""
+                         }
+                        </div>
+                        </div>
+                         <i class="fa-solid fa-thumbs-up" id="likeButton-${
+                           userpost._id
+                         }" onclick="toggleLike('${userpost._id}')" class="${
+                  userpost.likes.includes(userpost.username) ? "liked" : ""
+                }"></i>
+              <span id="likesCount-${userpost._id}">${
+                  userpost.likes.length
+                }</span>
+
+                   <button id="add_comments" onclick="toggleComments('${
+                     userpost._id
+                   }')"><i class="fa-regular fa-comment"></i> Comments</button>
+                        
+                        <div class="maincommentdiv" style="display: none;" id="maincommentdiv-${
+                          userpost._id
+                        }">
+   <div id="comments-${userpost._id}" class="showcomment">
+       ${
+         userpost.comments
+           ? userpost.comments
+               .map(
+                 (comment) =>
+                   `<p><strong>${comment.username}:</strong> ${comment.text}</p>`
+               )
+               .join("")
+           : ""
+       }
+   </div>
+   <div class="com_input">
+       <input type="text" id="commentInput-${
+         userpost._id
+       }" placeholder="Add a comment..." />
+       <button onclick="addcomment('${userpost._id}')">Comment</button>
+   </div>
+</div>
+
+                    </div>
+                     </div>
+                    </div>
+
+                `
+            )
+
+            .join("");
+        } else {
+          document.getElementById(
+            "timeline"
+          ).innerHTML = `<p>${data.message}</p>`;
+        }
+      });
+
+      function toggleComments(postId) {
+        console.log("Post ID:", postId); // Log the post ID
+        const commentDiv = document.getElementById(`maincommentdiv-${postId}`);
+        console.log("Comment Div:", commentDiv); // Check what commentDiv logs
+
+        if (commentDiv) {
+          if (
+            commentDiv.style.display === "none" ||
+            commentDiv.style.display === ""
+          ) {
+            commentDiv.style.display = "block"; // Show the comments section
+          } else {
+            commentDiv.style.display = "none"; // Hide the comments section
+          }
+        } else {
+          console.error(`Element with ID maincommentdiv-${postId} not found.`);
+        }
+      }
+
+      async function toggleLike(postId) {
+        const token = localStorage.getItem("token");
+
+        try {
+          const res = await fetch(`/like/${postId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              token: token,
+            },
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            const likecount = document.getElementById(`likesCount-${postId}`);
+
+            if (likecount) {
+              likecount.textContent = result.likesCount;
+            }
+
+            const likeicon = document.getElementById(`likeButton-${postId}`);
+            if (likeicon) {
+              if (result.liked) {
+                likeicon.classList.add("liked");
+                likeicon.style.color = "blue";
+              } else {
+                likeicon.classList.remove("liked");
+                likeicon.style.color = "";
+              }
+            }
+          } else {
+            console.error(result.message);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      async function addcomment(postId) {
+        const token = localStorage.getItem("token");
+        const commentInput = document.getElementById(`commentInput-${postId}`);
+        const commentText = commentInput.value;
+
+        if (!commentText) return;
+
+        const res = await fetch(`/comment/${postId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            token: token,
+          },
+          body: JSON.stringify({ comment: commentText }),
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          const commentsDiv = document.getElementById(`comments-${postId}`);
+          commentsDiv.innerHTML += `<p><strong>${result.username}:</strong> ${commentText}</p>`;
+          commentInput.value = "";
+        } else {
+          console.log(result.message);
+        }
+      }
+    </script>
+  </body>
+</html>
