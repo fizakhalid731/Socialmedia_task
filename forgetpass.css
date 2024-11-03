@@ -1,0 +1,239 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+body{
+  font-family: Arial, sans-serif;
+  background-image: url("background.jpg");
+  background-size: cover;
+}
+.form-container {
+    width: 500px;
+    margin-left: 33%;
+    height: 450px;
+    margin-top: 8%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+.from_main_div {
+    display: flex;
+    justify-content: flex-start;
+    color: white;
+}
+
+img {
+  width: 140px;
+  margin-top: 5%;
+  margin-left: 36%;
+}
+
+.login-container {
+    width: 500px;
+    height: 500px;
+    border-radius: 23px;
+    background-color: #f2f2f23d;
+    margin-left: 33%;
+    margin-top: 5%;
+}
+h2{
+    margin-left: 25%;
+    margin-bottom: 7%;
+    margin-top: 4%;
+    color: white;
+    font-size: 30px;
+}
+.form{
+    margin-left: 25%;
+}
+.form >label {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    justify-content: left;
+    /* margin-left: 2%; */
+}
+.form >input {
+    height: 30px;
+    width: 70%;
+    border-radius: 4px;
+    margin-bottom: 5%;
+    border: none;
+    padding: 5px;
+}
+.form >button {
+    height: 39px;
+    width: 271px;
+    border-radius: 4px;
+    margin-bottom: 2%;
+    background-color: #082674a1;
+    color: white;
+    border: none;
+}
+/* button */
+
+.buttons_links > button {
+    height: 30px;
+    margin-left: 2%;
+    width: 150px;
+    border: none;
+}
+.buttons_links {
+    text-align: center; 
+    margin-top: 20px; 
+}
+
+.buttons_links a {
+    text-decoration: none;
+    margin: 0 10px; 
+}
+
+.buttons_linksbtn {
+    padding: 10px 20px;
+    background-color:#082674a1;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 8%;
+    width: 160px;
+    height: 50px;
+    transition: background-color 0.3s;
+}
+
+
+.buttons_linksbtn :hover {
+    background-color: #0056b3; 
+}
+
+.butt-container {
+    width: 400px;
+    height: 300px;
+    border-radius: 23px;
+    background-color: #fafafa26;
+    margin-left: 36%;
+    margin-top: 5%;
+}
+.fa-brands {
+    font-weight: 400;
+    margin-top: 5%;
+}
+
+.otpform {
+    margin-top: 8%;
+    margin-left: 39%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    width: 300px;
+    height: 200px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+
+  
+.otp_label {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    justify-content: left;
+    margin-top: 19%;
+    margin-left: 5%;
+  }
+  
+.otp_input{
+    width: 82%;
+    padding: 10px;
+    margin-top: 1%;
+    margin-left: 5%;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .otp_input:focus {
+    outline: none;
+    border-color: #4c77af;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+  }
+  
+.otp_button{
+    width: 266px;
+    padding: 10px;
+    margin-left: 5%;
+    background-color: #082674a1;
+    color: #fff;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+.otp_button:hover {
+    background-color: #0056b3;
+  }
+
+/* //// */
+
+  .resetpaswordform {
+    margin-top: 8%;
+    margin-left: 39%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    width: 300px;
+    height: 200px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+
+  
+.resetformlabel {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    justify-content: left;
+    margin-top: 19%;
+    margin-left: 5%;
+  }
+  
+.resetforminput{
+    width: 82%;
+    padding: 10px;
+    margin-left: 5%;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .resetforminput:focus {
+    outline: none;
+    border-color: #4c77af;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+  }
+  
+.resetbutton{
+    width: 266px;
+    padding: 10px;
+    margin-left: 5%;
+    background-color: #082674a1;
+    color: #fff;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+.resetbutton:hover {
+    background-color: #0056b3;
+  }
