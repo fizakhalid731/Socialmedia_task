@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="login_style.css" />
+    <script
+      src="https://kit.fontawesome.com/a57563e1c2.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="logo">
+        <img src="logo1.png" alt="logo" />
+      </div>
+      <h2>Login Page</h2>
+      <div class="from_main_div">
+        <form id="loginForm" class="form">
+          <label for="username">UserName</label>
+          <br />
+          <input
+            type="text"
+            id="username"
+            placeholder="Enter your Name"
+            required
+          />
+          <br />
+          <label for="password">Password</label>
+          <br />
+          <input
+            type="password"
+            id="password"
+            placeholder="Enter your password"
+            required
+          />
+          <br />
+          <button type="submit">Login</button>
+          <br />
+          <span>Reset Password<a href="/forgetpass.html"> click me</a></span>
+          <br />
+          <br />
+          <div id="message"></div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          {
+            const res = await fetch("/login", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username, password }),
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+
+              localStorage.setItem("token", data.token);
+              document.getElementById("message").textContent = data.message;
+
+              window.location.href = "/profile.html";
+            } else {
+              const errmessage = await res.text();
+              document.getElementById("message").textContent = data.errmessage;
+            }
+          }
+        });
+    </script>
+  </body>
+</html>
