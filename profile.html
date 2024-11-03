@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Profile</title>
+    <link rel="stylesheet" href="myprofile.css" />
+    <script
+      src="https://kit.fontawesome.com/a57563e1c2.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <header class="header">
+      <div class="logodiv">
+        <a href="/">
+          <img src="logo1.png" alt="logo" class="logo" />
+        </a>
+      </div>
+      <nav class="nav-links">
+        <a href="/timeline.html">TimeLine</a>
+        <a href="/profile.html">My Profile</a>
+      </nav>
+    </header>
+    <div class="profilebar">
+      <button id="toggleCsvFile" class="toggleCsvFile">Upload CSV</button>
+      <button id="togglePostForm" class="togglePostForm">Add Post</button>
+
+      <i class="fa-solid fa-gear" id="settingsicon"></i>
+    </div>
+
+    <div class="addpost" style="display: none">
+      <form id="addpost">
+        <input type="text" id="title" placeholder="Post Title" required />
+        <textarea
+          id="description"
+          placeholder="Post Description"
+          required
+        ></textarea>
+        <input type="file" id="image" accept="image/*" required />
+        <button type="submit">Upload Post</button>
+      </form>
+    </div>
+
+    <div class="addCSVForm" style="display: none">
+      <form
+        id="uploadForm"
+        action="/upload-csv"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <input type="file" id="csvFile" name="csvFile" accept=".csv" required />
+        <br />
+        <button type="submit" class="cvsbutton">Upload CSV</button>
+      </form>
+    </div>
+
+    <!-- Edit Form -->
+    <form class="editpost" id="updatePostForm" style="display: none">
+      <input type="hidden" id="postId" />
+      <!-- Hidden input for post ID -->
+      <input type="text" id="editTitle" placeholder="Post Title" required />
+      <textarea
+        id="editDescription"
+        placeholder="Post Description"
+        required
+      ></textarea>
+      <input type="file" id="editImage" accept="image/*" required />
+      <button type="submit">Update Post</button>
+    </form>
+
+    <div class="settings" style="display: none">
+      <button class="deleteAcc-btn" id="deleteAcc-btn">Delete Account</button>
+      <div id="deleteMessage"></div>
+      <button class="logout-btn" onclick="logout()">LogOut</button>
+      <button class="editprof-btn" onclick="userinfo()">Edit Profile</button>
+    </div>
+
+    <div id="message" style="color: rgb(63, 61, 61)"></div>
+    <div id="userInfo" class="userInfo"></div>
+    <div id="posts"></div>
+
+    <script>
+      function userinfo() {
+        window.location.href = "/userinfo.html";
+      }
+      function logout() {
+        window.location.href = "/login.html";
+      }
+      //delete account button
+      document
+        .getElementById("deleteAcc-btn")
+        .addEventListener("click", async () => {
+          const token = localStorage.getItem("token");
+          if (confirm("You want to delete your account?")) {
+            const res = await fetch("/deleteUser", {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                token: token,
+              },
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+              document.getElementById("deleteMessage").innerHTML = data.message;
+              localStorage.removeItem("token");
+              window.location.href = "/";
+            } else {
+              document.getElementById("deleteMessage").innerText = data.message; // Show error message
+            }
+          }
+        });
+
+      function timeAgo(date) {
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+
+        let interval = Math.floor(seconds / 31536000);
+        if (interval >= 1) return `${interval}y`; // years abbreviation
+
+        interval = Math.floor(seconds / 2592000);
+        if (interval >= 1) return `${interval}mo`; // months abbreviation
+
+        interval = Math.floor(seconds / 86400);
+        if (interval >= 1) return `${interval}d`; // days abbreviation
+
+        interval = Math.floor(seconds / 3600);
+        if (interval >= 1) return `${interval}h`; // hours abbreviation
+
+        interval = Math.floor(seconds / 60);
+        if (interval >= 1) return `${interval}m`; // minutes abbreviation
+
+        return "just now"; // for very recent posts
+      }
+      const token = localStorage.getItem("token");
+
+      fetch("/loggedIn-user-posts", {
+        method: "GET",
+        headers: {
+          token: token,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.userPosts && data.userPosts.length > 0) {
+            const loggedUser = data.userPosts[0].username;
+            document.getElementById("userInfo").innerHTML = `
+                      <h2>Welcome, ${loggedUser}!</h2>`;
+            document.getElementById("posts").innerHTML = data.userPosts
+              .map(
+                (userpost) => `
+                          <div class="maincontainer">
+                          <div class="maindiv">
+                          <div class="post">
+                              <div class = "namediv">
+                              <h3> <i class="fa-solid fa-circle-user"></i> ${
+                                userpost.username
+                              }</h3>
+                            <span class="righticon" onclick="toggleOptions(this)">
+                                      <i class="fa-solid fa-ellipsis"></i>
+                                        </span>
+                                        <div class="options" style="display: none;">
+                                      <button class="edit-button" onclick="openEditForm('${
+                                        userpost._id
+                                      }', '${userpost.title}', '${
+                  userpost.description
+                }')">Edit</button>
+                                    <button class="delete-button" onclick="deletePost('${
+                                      userpost._id
+                                    }')">Delete</button>
+                               </div>
+                              </div>
+                              <div class="post-time"> <span>${timeAgo(
+                                new Date(userpost.createdAt)
+                              )}</span> <i class="fa-solid fa-earth-americas"></i></div>
+                              <div class = "postdiv">
+                              <div class = "title">
+                              <h3>${userpost.title}</h3>
+                              </div>
+                              <div class = "descript">
+                              <p>${userpost.description}</p>
+                              ${
+                                userpost.image
+                                  ? `<img src="${userpost.image}" alt="Post Image" class="post-image" />`
+                                  : ""
+                              }
+                              </div>
+                              </div>
+                        <div class="like_commentmain">
+                         <div class="userlike_list" >
+                        <span>Liked by: ${
+                          userpost.likes.length > 0
+                            ? userpost.likes.join(", ")
+                            : "No likes yet"
+                        }</span>
+                           <button onclick="likesdisplay('${
+                             userpost._id
+                           }', this)" style="display: block"></button>
+                         </div>
+                         <button id="add_comments" onclick="toggleComments('${
+                           userpost._id
+                         }')"><i class="fa-regular fa-comment"></i> Comments</button>
+                        
+                        <div class="maincommentdiv" style="display: none;" id="maincommentdiv-${
+                          userpost._id
+                        }">
+   <div id="comments-${userpost._id}" class="showcomment">
+       ${
+         userpost.comments
+           ? userpost.comments
+               .map(
+                 (comment) =>
+                   `<p><strong>${comment.username}:</strong> ${comment.text}</p>`
+               )
+               .join(" ")
+           : "No comment yet"
+       }
+   </div>
+</div>
+                         
+    
+
+</div>
+                          </div>
+                           </div>
+                          </div>
+
+                      `
+              )
+              .join("");
+          } else {
+            // If no posts are found, display a message
+            document.getElementById("posts").innerHTML = `
+
+                     <div class="nopostmessage">
+                     <p class="mesg">This user has no Posts.</p>
+                      </div>
+
+                          `;
+          }
+        });
+
+      function toggleComments(postId) {
+        console.log("Post ID:", postId); // Log the post ID
+        const commentDiv = document.getElementById(`maincommentdiv-${postId}`);
+        console.log("Comment Div:", commentDiv); // Check what commentDiv logs
+
+        if (commentDiv) {
+          if (
+            commentDiv.style.display === "none" ||
+            commentDiv.style.display === ""
+          ) {
+            commentDiv.style.display = "block"; // Show the comments section
+          } else {
+            commentDiv.style.display = "none"; // Hide the comments section
+          }
+        } else {
+          console.error(`Element with ID maincommentdiv-${postId} not found.`);
+        }
+      }
+
+      function toggleOptions(icon) {
+        const optionsDiv = icon.nextElementSibling;
+        optionsDiv.style.display =
+          optionsDiv.style.display === "block" ? "none" : "block";
+      }
+
+      // Upload New Post
+      document
+        .getElementById("togglePostForm")
+        .addEventListener("click", () => {
+          const addPostDiv = document.querySelector(".addpost");
+          addPostDiv.style.display =
+            addPostDiv.style.display === "none" ? "block" : "none";
+        });
+
+      document
+        .getElementById("addpost")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const title = document.getElementById("title").value;
+          const description = document.getElementById("description").value;
+          const image = document.getElementById("image").files[0];
+          const token = localStorage.getItem("token");
+
+          const formData = new FormData();
+          formData.append("title", title);
+          formData.append("description", description);
+          formData.append("image", image);
+
+          const res = await fetch("/uploadpost", {
+            method: "POST",
+            headers: {
+              // "Content-Type": "application/json",
+              token: token,
+            },
+            body: formData,
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            alert("An error while uploading the post");
+          }
+          alert(data.message);
+          location.reload();
+          const postContainer = document.getElementById("posts");
+          const newPost = document.createElement("div");
+          newPost.classList.add("post");
+          newPost.innerHTML = `
+                          <h3>${title}</h3>
+                          <p>${description}</p>
+                          <img src="${URL.createObjectURL(
+                            image
+                          )}" alt="Post Image" class="post-image" />
+                      `;
+          postContainer.prepend(newPost);
+
+          document.getElementById("title").value = "";
+          document.getElementById("description").value = "";
+        });
+
+      // upload csv
+      document.getElementById("toggleCsvFile").addEventListener("click", () => {
+        const addCSVForm = document.querySelector(".addCSVForm");
+        addCSVForm.style.display =
+          addCSVForm.style.display === "none" ? "block" : "none";
+      });
+
+      // Open edit form
+      function openEditForm(id, title, description, image) {
+        document.getElementById("postId").value = id; // Set post ID
+        document.getElementById("editTitle").value = title; // Set title
+        document.getElementById("editDescription").value = description; // Set description
+        document.getElementById("updatePostForm").style.display = "block"; // Show the update form
+        document.querySelector(".addpost").style.display = "none"; // Hide add post form
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth", // This will enable smooth scrolling
+        });
+      }
+
+      // Update Post
+      document
+        .getElementById("updatePostForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const id = document.getElementById("postId").value;
+          const title = document.getElementById("editTitle").value;
+          const description = document.getElementById("editDescription").value;
+          const imageFile = document.getElementById("editImage").files[0];
+          const messageDiv = document.getElementById("message");
+          messageDiv.textContent = "";
+
+          const token = localStorage.getItem("token");
+
+          const formData = new FormData();
+          formData.append("title", title);
+          formData.append("description", description);
+          formData.append("image", imageFile);
+
+          const response = await fetch(`/updatePost/${id}`, {
+            method: "PUT",
+            headers: {
+              // "Content-Type": "application/json",
+              token: token, // Include the token in the headers
+            },
+            body: formData,
+          });
+
+          const data = await response.json();
+          if (response.ok) {
+            messageDiv.style.color = "green"; // Change color for success
+            messageDiv.textContent = data.message; // Display success message
+            console.log(data);
+
+            location.reload();
+          } else {
+            messageDiv.style.color = "red"; // Change color for error
+            messageDiv.textContent = data.message;
+          }
+        });
+
+      //settings
+
+      document.getElementById("settingsicon").addEventListener("click", () => {
+        const settings = document.querySelector(".settings");
+        settings.style.display =
+          settings.style.display === "none" ? "block" : "none";
+      });
+
+      //delete post
+
+      async function deletePost(id) {
+        const token = localStorage.getItem("token"); // Get the token from local storage
+
+        try {
+          const response = await fetch(`/deletePost/${id}`, {
+            method: "DELETE",
+            headers: {
+              // "Content-Type": "application/json",
+              token: token,
+            },
+          });
+
+          const data = await response.json();
+          if (response.ok) {
+            alert(data.message); // Success message
+            location.reload(); // Reload the page to reflect the deletion
+          } else {
+            alert(data.message); // Error message
+          }
+        } catch (error) {
+          console.error("Error deleting post:", error);
+          alert("Network error: Unable to delete post.");
+        }
+      }
+
+      async function likesdisplay(postId, icon) {
+        const likesDiv = document.getElementById(`likedUsers-${postId}`);
+        const token = localStorage.getItem("token");
+
+        if (likesDiv.style.display === "none") {
+          // Fetch the list of liked users only when opening
+          const res = await fetch(`/getLikedUsers/${postId}`, {
+            method: "GET",
+            headers: { token: token },
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            // Populate the list with usernames
+            const userList = document.getElementById(`userList-${postId}`);
+            userList.innerHTML = data.likedUsers
+              .map((username) => `<li>${username}</li>`)
+              .join("");
+            likesDiv.style.display = "block"; // Show the list
+          } else {
+            console.error("Failed to load liked users");
+          }
+        } else {
+          likesDiv.style.display = "none"; // Hide the list
+        }
+      }
+      function closeLikesModal() {
+        document.getElementById("likesModal").style.display = "none";
+      }
+
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData();
+          const csvFile = document.getElementById("csvFile").files[0];
+
+          formData.append("csvFile", csvFile);
+
+          try {
+            const token = localStorage.getItem("token");
+            const response = await fetch("/upload-csv", {
+              method: "POST",
+              headers: {
+                token: token,
+              },
+              body: formData,
+            });
+
+            if (response.ok) {
+              location.reload();
+              alert("CSV uploaded successfully: ");
+            } else {
+              const error = await response.json();
+              alert("Error: " + error.message);
+            }
+          } catch (error) {
+            console.error("Error uploading CSV:", error);
+            alert("Failed to upload CSV file.");
+          }
+        });
+
+      async function addcomment(postId) {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(`/comments/${postId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: token,
+          },
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          const commentsDiv = document.getElementById(`comments-${postId}`);
+          commentsDiv.innerHTML += `<p><strong>${result.username}:</strong> ${commentText}</p>`;
+          commentInput.value = "";
+        } else {
+          console.log(result.message);
+        }
+      }
+    </script>
+  </body>
+</html>
